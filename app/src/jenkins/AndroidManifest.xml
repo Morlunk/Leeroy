@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <meta-data
+            android:name="com.morlunk.leeroy.JENKINS_URL"
+            android:value="@string/jenkins_url" />
+
+        <meta-data
+            android:name="com.morlunk.leeroy.JENKINS_BUILD_NUMBER"
+            android:value="@integer/jenkins_build_number" />
+    </application>
+</manifest>
