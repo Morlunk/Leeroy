@@ -17,8 +17,13 @@ android {
         }
         jenkins {
             applicationIdSuffix ".jenkins"
-            resValue "string", "jenkins_url", "https://www.morlunk.com/jenkins/job/Plumble-Nightly"
-            resValue "integer", "jenkins_build_number", "80"
+            if (System.getenv("BUILD_NUMBER")) {
+                manifestPlaceholders = [JENKINS_BUILD: System.getenv("BUILD_NUMBER"),
+                                        JENKINS_URL: System.getenv("JOB_URL")]
+            } else {
+                manifestPlaceholders = [JENKINS_BUILD: -1,
+                                        JENKINS_URL: "" ]
+            }
         }
     }
 }

@@ -3,10 +3,9 @@
     <application>
         <meta-data
             android:name="com.morlunk.leeroy.JENKINS_URL"
-            android:value="@string/jenkins_url" />
-
+            android:value="${JENKINS_URL}" />
         <meta-data
-            android:name="com.morlunk.leeroy.JENKINS_BUILD_NUMBER"
-            android:value="@integer/jenkins_build_number" />
+            android:name="com.morlunk.leeroy.JENKINS_BUILD"
+            android:value="${JENKINS_BUILD}" />
     </application>
 </manifest>
