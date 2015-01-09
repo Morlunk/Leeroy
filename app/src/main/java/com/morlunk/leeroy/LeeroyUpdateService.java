@@ -22,13 +22,19 @@ import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.Context;
 import android.support.v4.app.NotificationCompat;
+import android.util.JsonReader;
+
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.List;
 
 /**
- * An {@link IntentService} subclass for handling asynchronous task requests in
- * a service on a separate handler thread.
- * <p/>
- * TODO: Customize class - update intent actions, extra parameters and static
- * helper methods.
+ * An {@link IntentService} subclass for polling Jenkins servers supporting Leeroy.
  */
 public class LeeroyUpdateService extends IntentService {
     public static final int NOTIFICATION_UPDATE = 1;
@@ -54,6 +60,33 @@ public class LeeroyUpdateService extends IntentService {
     }
 
     private void handleCheckUpdates(boolean notify) {
+        List<LeeroyApp> appList = LeeroyApp.getApps(getPackageManager());
+
+        if (appList.size() == 0) {
+            return;
+        }
+
+        for (LeeroyApp app : appList) {
+            try {
+                String paramUrl = app.getJenkinsUrl() + "?tree=lastSuccessfulBuild[number,url]";
+                URL url = new URL(paramUrl);
+                URLConnection conn = url.openConnection();
+                Reader reader = new InputStreamReader(conn.getInputStream());
+                JsonReader jsonReader = new JsonReader(reader);
+                jsonReader.beginObject();
+                jsonReader.beginObject();
+                while (jsonReader.hasNext()) {
+                    // TODO
+                }
+                jsonReader.endObject();
+                jsonReader.endObject();
+                jsonReader.close();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
         if (notify) {
             NotificationCompat.Builder ncb = new NotificationCompat.Builder(this);
