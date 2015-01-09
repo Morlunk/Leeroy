@@ -14,12 +14,13 @@
   ~
   ~ You should have received a copy of the GNU General Public License
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  -->
-
+-->
 <resources>
 
     <string name="app_name">Leeroy</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="title_updates">Updates</string>
+    <string name="title_all">All</string>
     <string name="action_settings">Settings</string>
+    <string name="installed_build">Build %d installed</string>
 
 </resources>

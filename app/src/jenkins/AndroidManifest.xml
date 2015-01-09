@@ -19,6 +19,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
         <meta-data
+            android:name="com.morlunk.leeroy.SUPPORTED"
+            android:value="${LEEROY_SUPPORTED}" />
+        <meta-data
             android:name="com.morlunk.leeroy.JENKINS_URL"
             android:value="${JENKINS_URL}" />
         <meta-data

@@ -18,6 +18,8 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+    }
     compileSdkVersion 21
     buildToolsVersion "21.1.2"
     defaultConfig {
@@ -32,14 +34,18 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+
+        jenkins.initWith(buildTypes.debug)
         jenkins {
             applicationIdSuffix ".jenkins"
             if (System.getenv("BUILD_NUMBER")) {
-                manifestPlaceholders = [JENKINS_BUILD: System.getenv("BUILD_NUMBER"),
-                                        JENKINS_URL: System.getenv("JOB_URL")]
+                manifestPlaceholders = [LEEROY_SUPPORTED: true,
+                                        JENKINS_BUILD   : System.getenv("BUILD_NUMBER"),
+                                        JENKINS_URL     : System.getenv("JOB_URL")]
             } else {
-                manifestPlaceholders = [JENKINS_BUILD: -1,
-                                        JENKINS_URL: "" ]
+                manifestPlaceholders = [LEEROY_SUPPORTED: false,
+                                        JENKINS_BUILD   : -1,
+                                        JENKINS_URL     : ""]
             }
         }
     }
