@@ -19,6 +19,7 @@ package com.morlunk.leeroy;
 
 import java.util.Locale;
 
+import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -93,6 +94,10 @@ public class AppListActivity extends ActionBarActivity implements ActionBar.TabL
                             .setText(mSectionsPagerAdapter.getPageTitle(i))
                             .setTabListener(this));
         }
+        Intent updateIntent = new Intent(this, LeeroyUpdateService.class);
+        updateIntent.setAction(LeeroyUpdateService.ACTION_UPDATE);
+        updateIntent.putExtra(LeeroyUpdateService.EXTRA_NOTIFY, true);
+        startService(updateIntent);
     }
 
 

@@ -19,6 +19,7 @@ package com.morlunk.leeroy;
 
 import android.app.IntentService;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.Context;
 import android.support.v4.app.NotificationCompat;
@@ -31,13 +32,14 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
  * An {@link IntentService} subclass for polling Jenkins servers supporting Leeroy.
  */
 public class LeeroyUpdateService extends IntentService {
-    public static final int NOTIFICATION_UPDATE = 1;
+    public static final int NOTIFICATION_UPDATE = 101;
 
     // Checks the Jenkins URLs for updates, displays a notification.
     public static final String ACTION_UPDATE = "com.morlunk.leeroy.action.CHECK_UPDATES";
@@ -66,21 +68,41 @@ public class LeeroyUpdateService extends IntentService {
             return;
         }
 
+        List<LeeroyAppUpdate> updates = new LinkedList<>();
         for (LeeroyApp app : appList) {
             try {
-                String paramUrl = app.getJenkinsUrl() + "?tree=lastSuccessfulBuild[number,url]";
+                String paramUrl = app.getJenkinsUrl() +
+                        "/api/json?tree=lastSuccessfulBuild[number,url]";
                 URL url = new URL(paramUrl);
                 URLConnection conn = url.openConnection();
                 Reader reader = new InputStreamReader(conn.getInputStream());
+
                 JsonReader jsonReader = new JsonReader(reader);
                 jsonReader.beginObject();
+                jsonReader.nextName();
                 jsonReader.beginObject();
+
+                int latestSuccessfulBuild = 0;
+                String buildUrl = null;
                 while (jsonReader.hasNext()) {
-                    // TODO
+                    String name = jsonReader.nextName();
+                    if ("number".equals(name)) {
+                        latestSuccessfulBuild = jsonReader.nextInt();
+                    } else if ("url".equals(name)) {
+                        buildUrl = jsonReader.nextString();
+                    }
                 }
                 jsonReader.endObject();
                 jsonReader.endObject();
                 jsonReader.close();
+
+                if (latestSuccessfulBuild > app.getJenkinsBuild()) {
+                    LeeroyAppUpdate update = new LeeroyAppUpdate();
+                    update.app = app;
+                    update.newBuild = latestSuccessfulBuild;
+                    update.newBuildUrl = buildUrl;
+                    updates.add(update);
+                }
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -90,8 +112,27 @@ public class LeeroyUpdateService extends IntentService {
 
         if (notify) {
             NotificationCompat.Builder ncb = new NotificationCompat.Builder(this);
+            ncb.setSmallIcon(R.drawable.ic_launcher);
+            ncb.setTicker(getString(R.string.updates_available));
+            ncb.setContentTitle(getString(R.string.updates_available));
+            ncb.setPriority(NotificationCompat.PRIORITY_LOW);
+            ncb.setContentIntent(PendingIntent.getActivity(this, 0,
+                    new Intent(this, AppListActivity.class), PendingIntent.FLAG_CANCEL_CURRENT));
+            NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle(ncb);
+            for (LeeroyAppUpdate update : updates) {
+                CharSequence appName = update.app.getApplicationInfo().loadLabel(getPackageManager());
+                style.addLine(getString(R.string.app_update, appName, update.app.getJenkinsBuild(),
+                        update.newBuild));
+            }
+            ncb.setNumber(updates.size());
             NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             nm.notify(NOTIFICATION_UPDATE, ncb.build());
         }
+    }
+
+    public static class LeeroyAppUpdate {
+        public LeeroyApp app;
+        public int newBuild;
+        public String newBuildUrl;
     }
 }

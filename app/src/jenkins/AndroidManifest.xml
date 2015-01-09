@@ -18,14 +18,24 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
+        <!-- A boolean value indicating whether Leeroy should manage this app. -->
         <meta-data
             android:name="com.morlunk.leeroy.SUPPORTED"
             android:value="${LEEROY_SUPPORTED}" />
-        <meta-data
-            android:name="com.morlunk.leeroy.JENKINS_URL"
-            android:value="${JENKINS_URL}" />
+
+        <!-- The Jenkins build number of this app. Used to determine updates. -->
         <meta-data
             android:name="com.morlunk.leeroy.JENKINS_BUILD"
             android:value="${JENKINS_BUILD}" />
+
+        <!-- The URL of the Jenkins job that this app was built by. -->
+        <meta-data
+            android:name="com.morlunk.leeroy.JENKINS_URL"
+            android:value="${JENKINS_URL}" />
+
+        <!-- A regular expression matching the name of the artifact to retrieve. -->
+        <meta-data
+            android:name="com.morlunk.leeroy.JENKINS_ARTIFACT"
+            android:value="app-jenkins\.apk" />
     </application>
 </manifest>
