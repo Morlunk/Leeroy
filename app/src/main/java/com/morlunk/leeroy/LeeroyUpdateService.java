@@ -128,8 +128,10 @@ public class LeeroyUpdateService extends IntentService {
             ncb.setContentTitle(getString(R.string.updates_available));
             ncb.setPriority(NotificationCompat.PRIORITY_LOW);
             ncb.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
-            ncb.setContentIntent(PendingIntent.getActivity(this, 0,
-                    new Intent(this, AppListActivity.class), PendingIntent.FLAG_CANCEL_CURRENT));
+            Intent appIntent = new Intent(this, AppListActivity.class);
+            appIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            ncb.setContentIntent(PendingIntent.getActivity(this, 0, appIntent,
+                    PendingIntent.FLAG_CANCEL_CURRENT));
             ncb.setAutoCancel(true);
             NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle();
             for (LeeroyAppUpdate update : updates) {

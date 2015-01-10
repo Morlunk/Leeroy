@@ -35,17 +35,17 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
 
-        jenkins.initWith(buildTypes.debug)
+        jenkins.initWith(debug)
         jenkins {
             applicationIdSuffix ".jenkins"
             if (System.getenv("BUILD_NUMBER")) {
-                manifestPlaceholders = [LEEROY_SUPPORTED: true,
-                                        JENKINS_BUILD   : System.getenv("BUILD_NUMBER"),
-                                        JENKINS_URL     : System.getenv("JOB_URL")]
+                manifestPlaceholders += [LEEROY_SUPPORTED: true,
+                                         JENKINS_BUILD   : System.getenv("BUILD_NUMBER"),
+                                         JENKINS_URL     : System.getenv("JOB_URL")]
             } else {
-                manifestPlaceholders = [LEEROY_SUPPORTED: false,
-                                        JENKINS_BUILD   : -1,
-                                        JENKINS_URL     : ""]
+                manifestPlaceholders += [LEEROY_SUPPORTED: false,
+                                         JENKINS_BUILD   : -1,
+                                         JENKINS_URL     : ""]
             }
         }
     }
