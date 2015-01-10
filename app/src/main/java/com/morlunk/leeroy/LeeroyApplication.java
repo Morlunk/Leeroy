@@ -62,6 +62,7 @@ public class LeeroyApplication extends Application implements
         int interval = Integer.parseInt(preferences.getString(LeeroySettings.INTERVAL_KEY,
                 LeeroySettings.DEFAULT_INTERVAL));
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        am.cancel(mAlarmIntent);
         am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, 0, interval, mAlarmIntent);
     }
 }
