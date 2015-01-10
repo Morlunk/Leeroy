@@ -32,9 +32,9 @@ import java.util.List;
  */
 public class LeeroyAppAdapter extends BaseAdapter {
     private Context mContext;
-    private List<LeeroyApp> mAppList;
+    private List<LeeroyAppUpdate> mAppList;
 
-    public LeeroyAppAdapter(Context context, List<LeeroyApp> appList) {
+    public LeeroyAppAdapter(Context context, List<LeeroyAppUpdate> appList) {
         mContext = context;
         mAppList = appList;
     }
@@ -61,7 +61,7 @@ public class LeeroyAppAdapter extends BaseAdapter {
             LayoutInflater inflater = LayoutInflater.from(mContext);
             v = inflater.inflate(R.layout.item_app, parent, false);
         }
-        final LeeroyApp app = mAppList.get(position);
+        final LeeroyApp app = mAppList.get(position).app;
         final ImageView icon = (ImageView) v.findViewById(R.id.item_app_icon);
         final TextView title = (TextView) v.findViewById(R.id.item_app_title);
         final TextView version = (TextView) v.findViewById(R.id.item_app_version);

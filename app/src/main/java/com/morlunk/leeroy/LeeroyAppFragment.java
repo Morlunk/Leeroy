@@ -18,7 +18,10 @@
 package com.morlunk.leeroy;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.ResultReceiver;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ListFragment;
 import android.view.View;
@@ -35,34 +38,25 @@ import java.util.List;
  * interface.
  */
 public class LeeroyAppFragment extends ListFragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_ITEMS = "items";
-
     private OnFragmentInteractionListener mListener;
-
-    public static LeeroyAppFragment newInstance(ArrayList<LeeroyApp> appList) {
-        LeeroyAppFragment fragment = new LeeroyAppFragment();
-        Bundle args = new Bundle();
-        args.putParcelableArrayList(ARG_ITEMS, appList);
-        fragment.setArguments(args);
-        return fragment;
-    }
+    private ResultReceiver mUpdateReceiver;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
     public LeeroyAppFragment() {
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        LeeroyAppAdapter adapter = new LeeroyAppAdapter(getActivity(), getAppList());
-        setListAdapter(adapter);
+        mUpdateReceiver = new ResultReceiver(new Handler()) {
+            @Override
+            protected void onReceiveResult(int resultCode, Bundle resultData) {
+                super.onReceiveResult(resultCode, resultData);
+                List<LeeroyAppUpdate> updates =
+                        resultData.getParcelableArrayList(LeeroyUpdateService.EXTRA_UPDATE_LIST);
+                LeeroyAppAdapter adapter = new LeeroyAppAdapter(getActivity(), updates);
+                setListAdapter(adapter);
+                setListShown(true);
+            }
+        };
     }
 
     @Override
@@ -74,6 +68,17 @@ public class LeeroyAppFragment extends ListFragment {
             throw new ClassCastException(activity.toString()
                     + " must implement OnFragmentInteractionListener");
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        setListShown(false);
+
+        Intent updateIntent = new Intent(getActivity(), LeeroyUpdateService.class);
+        updateIntent.setAction(LeeroyUpdateService.ACTION_CHECK_UPDATES);
+        updateIntent.putExtra(LeeroyUpdateService.EXTRA_RECEIVER, mUpdateReceiver);
+        getActivity().startService(updateIntent);
     }
 
     @Override
@@ -90,12 +95,8 @@ public class LeeroyAppFragment extends ListFragment {
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
-            mListener.onAppSelected((LeeroyApp) l.getItemAtPosition(position));
+            mListener.onAppSelected((LeeroyAppUpdate) l.getItemAtPosition(position));
         }
-    }
-
-    private List<LeeroyApp> getAppList() {
-        return getArguments().getParcelableArrayList(ARG_ITEMS);
     }
 
     /**
@@ -109,7 +110,7 @@ public class LeeroyAppFragment extends ListFragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
-        public void onAppSelected(LeeroyApp app);
+        public void onAppSelected(LeeroyAppUpdate app);
     }
 
 }
