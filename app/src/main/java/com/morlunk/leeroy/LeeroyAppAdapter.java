@@ -61,13 +61,14 @@ public class LeeroyAppAdapter extends BaseAdapter {
             LayoutInflater inflater = LayoutInflater.from(mContext);
             v = inflater.inflate(R.layout.item_app, parent, false);
         }
-        final LeeroyApp app = mAppList.get(position).app;
+        final LeeroyAppUpdate update = mAppList.get(position);
+        final LeeroyApp app = update.app;
         final ImageView icon = (ImageView) v.findViewById(R.id.item_app_icon);
         final TextView title = (TextView) v.findViewById(R.id.item_app_title);
         final TextView version = (TextView) v.findViewById(R.id.item_app_version);
         icon.setImageDrawable(app.getApplicationInfo().loadIcon(mContext.getPackageManager()));
         title.setText(app.getApplicationInfo().loadLabel(mContext.getPackageManager()));
-        version.setText(mContext.getString(R.string.installed_build, app.getJenkinsBuild()));
+        version.setText(mContext.getString(R.string.app_update, app.getJenkinsBuild(), update.newBuild));
         return v;
     }
 }

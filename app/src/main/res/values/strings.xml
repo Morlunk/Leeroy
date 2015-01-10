@@ -21,9 +21,19 @@
     <string name="title_updates">Updates</string>
     <string name="title_all">All</string>
     <string name="action_settings">Settings</string>
-    <string name="installed_build">Build %d installed</string>
+    <string name="app_update">Build %1$d → %2$d</string>
     <string name="updates_available">Jenkins updates available</string>
-    <string name="app_update">%1$s: Build %2$d → %3$d</string>
+    <string name="notify_app_update">%1$s: Build %2$d → %3$d</string>
     <string name="downloading">Downloading…</string>
+    <string name="error_no_artifact">Failed to find Jenkins artifact. This is likely an issue with the app\'s Leeroy configuration.</string>
+    <string name="error">Error</string>
+    <string name="interval_15m">15 minutes</string>
+    <string name="interval_30m">30 minutes</string>
+    <string name="interval_1hr">1 hour</string>
+    <string name="interval_4hr">4 hours</string>
+    <string name="interval_12hr">12 hours</string>
+    <string name="interval_24hr">24 hours</string>
+    <string name="update_interval">Update Interval</string>
+    <string name="update_interval_sum">Interval between Jenkins updates.</string>
 
 </resources>

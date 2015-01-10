@@ -24,6 +24,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.ResultReceiver;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.util.JsonReader;
 
 import java.io.IOException;
@@ -126,17 +127,19 @@ public class LeeroyUpdateService extends IntentService {
             ncb.setTicker(getString(R.string.updates_available));
             ncb.setContentTitle(getString(R.string.updates_available));
             ncb.setPriority(NotificationCompat.PRIORITY_LOW);
+            ncb.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
             ncb.setContentIntent(PendingIntent.getActivity(this, 0,
-                    new Intent(this, AppListActivity.class), PendingIntent.FLAG_NO_CREATE));
+                    new Intent(this, AppListActivity.class), PendingIntent.FLAG_CANCEL_CURRENT));
             ncb.setAutoCancel(true);
-            NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle(ncb);
+            NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle();
             for (LeeroyAppUpdate update : updates) {
                 CharSequence appName = update.app.getApplicationInfo().loadLabel(getPackageManager());
-                style.addLine(getString(R.string.app_update, appName, update.app.getJenkinsBuild(),
+                style.addLine(getString(R.string.notify_app_update, appName, update.app.getJenkinsBuild(),
                         update.newBuild));
             }
+            ncb.setStyle(style);
             ncb.setNumber(updates.size());
-            NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            NotificationManagerCompat nm = NotificationManagerCompat.from(this);
             nm.notify(NOTIFICATION_UPDATE, ncb.build());
         }
 

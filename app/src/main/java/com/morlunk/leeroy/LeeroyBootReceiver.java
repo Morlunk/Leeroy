@@ -25,24 +25,18 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+/**
+ * Ensures that LeeroyApplication starts the update check alarm.
+ */
 public class LeeroyBootReceiver extends BroadcastReceiver {
     public LeeroyBootReceiver() {
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
-            // TODO: read interval preferences
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-            long interval = 10; // minutes
-            long intervalMs = 60 * 1000 * interval;
-            AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-            Intent updateIntent = new Intent(context, LeeroyUpdateService.class);
-            updateIntent.setAction(LeeroyUpdateService.ACTION_CHECK_UPDATES);
-            updateIntent.putExtra(LeeroyUpdateService.EXTRA_NOTIFY, true);
-            am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, intervalMs, intervalMs,
-                    PendingIntent.getService(context, 0, updateIntent,
-                            PendingIntent.FLAG_UPDATE_CURRENT));
-        }
+        // Observe that we don't do anything here.
+        // The fact that we have a receiver registered on boot will cause LeeroyApplication to be
+        // created. This is sufficient for setting up the alarm to check Jenkins servers for
+        // updates.
     }
 }

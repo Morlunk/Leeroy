@@ -17,20 +17,14 @@
 
 package com.morlunk.leeroy;
 
-import android.annotation.TargetApi;
-import android.app.PendingIntent;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageInstaller;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
-import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.JsonReader;
-import android.util.JsonToken;
 import android.util.Log;
 
 import java.io.File;
@@ -38,7 +32,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.Reader;
 import java.net.URL;
 import java.net.URLConnection;
@@ -51,8 +44,8 @@ import java.util.regex.Pattern;
  */
 public class LeeroyAppUpdateTask extends AsyncTask<LeeroyAppUpdate, Void, Void> {
     private Context mContext;
-    private PendingIntent mInstallerIntent;
     private ProgressDialog mDialog;
+    private Throwable mThrowable;
 
     public LeeroyAppUpdateTask(Context context) {
         mContext = context;
@@ -61,10 +54,18 @@ public class LeeroyAppUpdateTask extends AsyncTask<LeeroyAppUpdate, Void, Void> 
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
+        mThrowable = null;
         mDialog = new ProgressDialog(mContext);
         mDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         mDialog.setMessage(mContext.getString(R.string.downloading));
-        mDialog.setCancelable(false);
+        mDialog.setCancelable(true);
+        mDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                cancel(true);
+                mDialog = null;
+            }
+        });
         mDialog.show();
     }
 
@@ -115,12 +116,12 @@ public class LeeroyAppUpdateTask extends AsyncTask<LeeroyAppUpdate, Void, Void> 
                     mDialog.setMax(connection.getContentLength());
                     install(connection.getInputStream());
                 } else {
-                    // TODO handle match failing
                     Log.e("Leeroy", "Failed to find artifact matching path regex");
+                    mThrowable = new Exception(mContext.getString(R.string.error_no_artifact));
                 }
             } catch (IOException e) {
-                // TODO
                 e.printStackTrace();
+                mThrowable = e;
             }
         }
         return null;
@@ -131,6 +132,13 @@ public class LeeroyAppUpdateTask extends AsyncTask<LeeroyAppUpdate, Void, Void> 
         super.onPostExecute(aVoid);
         mDialog.hide();
         mDialog = null;
+        if (mThrowable != null) {
+            AlertDialog.Builder adb = new AlertDialog.Builder(mContext);
+            adb.setTitle(R.string.error);
+            adb.setMessage(mThrowable.getLocalizedMessage());
+            adb.setPositiveButton(android.R.string.ok, null);
+            adb.show();
+        }
     }
 
     private void install(InputStream apkStream) throws IOException {

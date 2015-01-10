@@ -25,7 +25,8 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme"
+        android:name=".LeeroyApplication">
         <activity
             android:name=".AppListActivity"
             android:label="@string/app_name" >
@@ -36,10 +37,17 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".LeeroySettings"
+                  android:label="@string/action_settings"
+                  android:parentActivityName=".AppListActivity"/>
+
         <receiver
             android:name=".LeeroyBootReceiver"
             android:enabled="true"
             android:exported="false" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
         </receiver>
 
         <service
