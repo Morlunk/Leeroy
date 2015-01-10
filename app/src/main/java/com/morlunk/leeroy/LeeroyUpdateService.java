@@ -21,7 +21,8 @@ import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
-import android.content.Context;
+import android.os.Bundle;
+import android.os.ResultReceiver;
 import android.support.v4.app.NotificationCompat;
 import android.util.JsonReader;
 
@@ -29,9 +30,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -41,10 +42,16 @@ import java.util.List;
 public class LeeroyUpdateService extends IntentService {
     public static final int NOTIFICATION_UPDATE = 101;
 
-    // Checks the Jenkins URLs for updates, displays a notification.
-    public static final String ACTION_UPDATE = "com.morlunk.leeroy.action.CHECK_UPDATES";
+    /**
+     * Checks the Jenkins URLs for updates, displaying a notification if {@link #EXTRA_NOTIFY} is
+     * set. Informs the {@link ResultReceiver} in {@link #EXTRA_RECEIVER} of available updates
+     * in the bundle's {@link #EXTRA_UPDATE_LIST}.
+     */
+    public static final String ACTION_CHECK_UPDATES = "com.morlunk.leeroy.action.CHECK_UPDATES";
 
-    public static final String EXTRA_NOTIFY = "com.morlunk.leeroy.extra.notify";
+    public static final String EXTRA_NOTIFY = "com.morlunk.leeroy.extra.NOTIFY";
+    public static final String EXTRA_UPDATE_LIST = "com.morlunk.leeroy.extra.UPDATE_LIST";
+    public static final String EXTRA_RECEIVER = "com.morlunk.leeroy.extra.RECEIVER";
 
     public LeeroyUpdateService() {
         super("LeeroyUpdateService");
@@ -54,14 +61,15 @@ public class LeeroyUpdateService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         if (intent != null) {
             final String action = intent.getAction();
-            if (ACTION_UPDATE.equals(action)) {
+            final ResultReceiver receiver = intent.getParcelableExtra(EXTRA_RECEIVER);
+            if (ACTION_CHECK_UPDATES.equals(action)) {
                 final boolean notify = intent.getBooleanExtra(EXTRA_NOTIFY, false);
-                handleCheckUpdates(notify);
+                handleCheckUpdates(notify, receiver);
             }
         }
     }
 
-    private void handleCheckUpdates(boolean notify) {
+    private void handleCheckUpdates(boolean notify, ResultReceiver receiver) {
         List<LeeroyApp> appList = LeeroyApp.getApps(getPackageManager());
 
         if (appList.size() == 0) {
@@ -90,6 +98,8 @@ public class LeeroyUpdateService extends IntentService {
                         latestSuccessfulBuild = jsonReader.nextInt();
                     } else if ("url".equals(name)) {
                         buildUrl = jsonReader.nextString();
+                    } else {
+                        throw new RuntimeException("Unknown key " + name);
                     }
                 }
                 jsonReader.endObject();
@@ -112,12 +122,13 @@ public class LeeroyUpdateService extends IntentService {
 
         if (notify) {
             NotificationCompat.Builder ncb = new NotificationCompat.Builder(this);
-            ncb.setSmallIcon(R.drawable.ic_launcher);
+            ncb.setSmallIcon(R.drawable.ic_stat_update);
             ncb.setTicker(getString(R.string.updates_available));
             ncb.setContentTitle(getString(R.string.updates_available));
             ncb.setPriority(NotificationCompat.PRIORITY_LOW);
             ncb.setContentIntent(PendingIntent.getActivity(this, 0,
-                    new Intent(this, AppListActivity.class), PendingIntent.FLAG_CANCEL_CURRENT));
+                    new Intent(this, AppListActivity.class), PendingIntent.FLAG_NO_CREATE));
+            ncb.setAutoCancel(true);
             NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle(ncb);
             for (LeeroyAppUpdate update : updates) {
                 CharSequence appName = update.app.getApplicationInfo().loadLabel(getPackageManager());
@@ -128,11 +139,12 @@ public class LeeroyUpdateService extends IntentService {
             NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             nm.notify(NOTIFICATION_UPDATE, ncb.build());
         }
+
+        if (receiver != null) {
+            Bundle results = new Bundle();
+            results.putParcelableArrayList(EXTRA_UPDATE_LIST, new ArrayList<>(updates));
+            receiver.send(0, results);
+        }
     }
 
-    public static class LeeroyAppUpdate {
-        public LeeroyApp app;
-        public int newBuild;
-        public String newBuildUrl;
-    }
 }

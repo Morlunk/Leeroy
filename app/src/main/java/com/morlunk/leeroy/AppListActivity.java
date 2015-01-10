@@ -17,9 +17,13 @@
 
 package com.morlunk.leeroy;
 
+import java.util.List;
 import java.util.Locale;
 
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.ResultReceiver;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -28,15 +32,8 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
-
-import com.morlunk.leeroy.R;
 
 public class AppListActivity extends ActionBarActivity implements ActionBar.TabListener,
     LeeroyAppFragment.OnFragmentInteractionListener {
@@ -55,6 +52,8 @@ public class AppListActivity extends ActionBarActivity implements ActionBar.TabL
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
+
+    private ResultReceiver mUpdateReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,9 +93,23 @@ public class AppListActivity extends ActionBarActivity implements ActionBar.TabL
                             .setText(mSectionsPagerAdapter.getPageTitle(i))
                             .setTabListener(this));
         }
+
+        mUpdateReceiver = new ResultReceiver(new Handler()) {
+            @Override
+            protected void onReceiveResult(int resultCode, Bundle resultData) {
+                super.onReceiveResult(resultCode, resultData);
+                List<LeeroyAppUpdate> updates =
+                        resultData.getParcelableArrayList(LeeroyUpdateService.EXTRA_UPDATE_LIST);
+                LeeroyAppUpdateTask task = new LeeroyAppUpdateTask(AppListActivity.this);
+                task.execute(updates.get(0));
+
+            }
+        };
+
         Intent updateIntent = new Intent(this, LeeroyUpdateService.class);
-        updateIntent.setAction(LeeroyUpdateService.ACTION_UPDATE);
+        updateIntent.setAction(LeeroyUpdateService.ACTION_CHECK_UPDATES);
         updateIntent.putExtra(LeeroyUpdateService.EXTRA_NOTIFY, true);
+        updateIntent.putExtra(LeeroyUpdateService.EXTRA_RECEIVER, mUpdateReceiver);
         startService(updateIntent);
     }
 

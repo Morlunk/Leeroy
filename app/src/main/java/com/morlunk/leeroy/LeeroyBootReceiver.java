@@ -38,7 +38,7 @@ public class LeeroyBootReceiver extends BroadcastReceiver {
             long intervalMs = 60 * 1000 * interval;
             AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
             Intent updateIntent = new Intent(context, LeeroyUpdateService.class);
-            updateIntent.setAction(LeeroyUpdateService.ACTION_UPDATE);
+            updateIntent.setAction(LeeroyUpdateService.ACTION_CHECK_UPDATES);
             updateIntent.putExtra(LeeroyUpdateService.EXTRA_NOTIFY, true);
             am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, intervalMs, intervalMs,
                     PendingIntent.getService(context, 0, updateIntent,

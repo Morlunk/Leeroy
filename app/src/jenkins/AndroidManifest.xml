@@ -33,9 +33,10 @@
             android:name="com.morlunk.leeroy.JENKINS_URL"
             android:value="${JENKINS_URL}" />
 
-        <!-- A regular expression matching the name of the artifact to retrieve. -->
+        <!-- A regular expression matching the relative path of the artifact to retrieve. If
+             multiple artifacts match this regex, the first matched will be installed. -->
         <meta-data
-            android:name="com.morlunk.leeroy.JENKINS_ARTIFACT"
-            android:value="app-jenkins\.apk" />
+            android:name="com.morlunk.leeroy.JENKINS_ARTIFACT_PATH"
+            android:value="app/build/outputs/apk/app-jenkins-debug\\.apk" />
     </application>
 </manifest>

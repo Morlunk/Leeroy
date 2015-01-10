@@ -24,5 +24,6 @@
     <string name="installed_build">Build %d installed</string>
     <string name="updates_available">Jenkins updates available</string>
     <string name="app_update">%1$s: Build %2$d → %3$d</string>
+    <string name="downloading">Downloading…</string>
 
 </resources>

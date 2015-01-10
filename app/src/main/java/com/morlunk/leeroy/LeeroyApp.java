@@ -45,7 +45,7 @@ public class LeeroyApp implements Parcelable {
     public static final String LEEROY_SUPPORTED_KEY = "com.morlunk.leeroy.SUPPORTED";
     public static final String JENKINS_URL_KEY = "com.morlunk.leeroy.JENKINS_URL";
     public static final String JENKINS_BUILD_KEY = "com.morlunk.leeroy.JENKINS_BUILD";
-    public static final String JENKINS_ARTIFACT_KEY = "com.morlunk.leeroy.JENKINS_ARTIFACT";
+    public static final String JENKINS_ARTIFACT_PATH_KEY = "com.morlunk.leeroy.JENKINS_ARTIFACT_PATH";
 
     private ApplicationInfo mApplicationInfo;
 
@@ -94,8 +94,8 @@ public class LeeroyApp implements Parcelable {
         return mApplicationInfo.metaData.getInt(JENKINS_BUILD_KEY);
     }
 
-    public String getJenkinsArtifactRegex() {
-        return mApplicationInfo.metaData.getString(JENKINS_ARTIFACT_KEY);
+    public String getJenkinsArtifactPathRegex() {
+        return mApplicationInfo.metaData.getString(JENKINS_ARTIFACT_PATH_KEY);
     }
 
     @Override
