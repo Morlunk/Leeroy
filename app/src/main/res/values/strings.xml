@@ -35,5 +35,7 @@
     <string name="interval_24hr">24 hours</string>
     <string name="update_interval">Update Interval</string>
     <string name="update_interval_sum">Interval between Jenkins updates.</string>
+    <string name="no_updates">No updates found.</string>
+    <string name="action_refresh">Refresh</string>
 
 </resources>

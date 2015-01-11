@@ -24,6 +24,9 @@ import android.os.Handler;
 import android.os.ResultReceiver;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ListFragment;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 
@@ -60,6 +63,13 @@ public class LeeroyAppFragment extends ListFragment {
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setMenuVisibility(true);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
@@ -71,14 +81,15 @@ public class LeeroyAppFragment extends ListFragment {
     }
 
     @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        setEmptyText(getString(R.string.no_updates));
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
-        setListShown(false);
-
-        Intent updateIntent = new Intent(getActivity(), LeeroyUpdateService.class);
-        updateIntent.setAction(LeeroyUpdateService.ACTION_CHECK_UPDATES);
-        updateIntent.putExtra(LeeroyUpdateService.EXTRA_RECEIVER, mUpdateReceiver);
-        getActivity().startService(updateIntent);
+        refresh();
     }
 
     @Override
@@ -97,6 +108,31 @@ public class LeeroyAppFragment extends ListFragment {
             // fragment is attached to one) that an item has been selected.
             mListener.onAppSelected((LeeroyAppUpdate) l.getItemAtPosition(position));
         }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.menu_app_list_fragment, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_refresh:
+                refresh();
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void refresh() {
+        setListShown(false);
+
+        Intent updateIntent = new Intent(getActivity(), LeeroyUpdateService.class);
+        updateIntent.setAction(LeeroyUpdateService.ACTION_CHECK_UPDATES);
+        updateIntent.putExtra(LeeroyUpdateService.EXTRA_RECEIVER, mUpdateReceiver);
+        getActivity().startService(updateIntent);
     }
 
     /**
