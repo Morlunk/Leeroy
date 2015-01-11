@@ -135,6 +135,7 @@ public class LeeroyUpdateService extends IntentService {
                 ncb.setSmallIcon(R.drawable.ic_stat_update);
                 ncb.setTicker(getString(R.string.updates_available));
                 ncb.setContentTitle(getString(R.string.updates_available));
+                ncb.setContentText(getString(R.string.num_updates, updates.size()));
                 ncb.setPriority(NotificationCompat.PRIORITY_LOW);
                 ncb.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
                 Intent appIntent = new Intent(this, AppListActivity.class);

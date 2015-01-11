@@ -24,6 +24,7 @@
         <item>@string/interval_4hr</item>
         <item>@string/interval_12hr</item>
         <item>@string/interval_24hr</item>
+        <item>@string/interval_never</item>
     </string-array>
 
     <string-array name="array_interval_values">
@@ -33,5 +34,6 @@
         <item>14400000</item>
         <item>43200000</item>
         <item>86400000</item>
+        <item>0</item>
     </string-array>
 </resources>

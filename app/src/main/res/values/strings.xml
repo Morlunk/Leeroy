@@ -40,5 +40,7 @@
     <string name="invalid_url">Invalid Jenkins URL for app %s.</string>
     <string name="error_checking_updates">Error checking Jenkins updates</string>
     <string name="click_to_retry">Click to retry.</string>
+    <string name="num_updates">%d apps with updates</string>
+    <string name="interval_never">No notifications</string>
 
 </resources>
