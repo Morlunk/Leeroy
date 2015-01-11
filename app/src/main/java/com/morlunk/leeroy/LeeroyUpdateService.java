@@ -162,7 +162,7 @@ public class LeeroyUpdateService extends IntentService {
                 ncb.setContentText(getString(R.string.click_to_retry));
                 ncb.setPriority(NotificationCompat.PRIORITY_LOW);
                 ncb.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
-                ncb.setContentIntent(PendingIntent.getActivity(this, 0, intent,
+                ncb.setContentIntent(PendingIntent.getService(this, 0, intent,
                         PendingIntent.FLAG_CANCEL_CURRENT));
                 ncb.setAutoCancel(true);
                 ncb.setNumber(exceptions.size());
