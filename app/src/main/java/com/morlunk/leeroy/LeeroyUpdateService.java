@@ -42,16 +42,19 @@ import java.util.List;
  */
 public class LeeroyUpdateService extends IntentService {
     public static final int NOTIFICATION_UPDATE = 101;
+    public static final int NOTIFICATION_ERROR = 102;
 
     /**
      * Checks the Jenkins URLs for updates, displaying a notification if {@link #EXTRA_NOTIFY} is
      * set. Informs the {@link ResultReceiver} in {@link #EXTRA_RECEIVER} of available updates
-     * in the bundle's {@link #EXTRA_UPDATE_LIST}.
+     * in the bundle's {@link #EXTRA_UPDATE_LIST}, and of failed queries in
+     * {@link #EXTRA_EXCEPTION_LIST}.
      */
     public static final String ACTION_CHECK_UPDATES = "com.morlunk.leeroy.action.CHECK_UPDATES";
 
     public static final String EXTRA_NOTIFY = "com.morlunk.leeroy.extra.NOTIFY";
     public static final String EXTRA_UPDATE_LIST = "com.morlunk.leeroy.extra.UPDATE_LIST";
+    public static final String EXTRA_EXCEPTION_LIST = "com.morlunk.leeroy.extra.EXCEPTION_LIST";
     public static final String EXTRA_RECEIVER = "com.morlunk.leeroy.extra.RECEIVER";
 
     public LeeroyUpdateService() {
@@ -65,12 +68,12 @@ public class LeeroyUpdateService extends IntentService {
             final ResultReceiver receiver = intent.getParcelableExtra(EXTRA_RECEIVER);
             if (ACTION_CHECK_UPDATES.equals(action)) {
                 final boolean notify = intent.getBooleanExtra(EXTRA_NOTIFY, false);
-                handleCheckUpdates(notify, receiver);
+                handleCheckUpdates(intent, notify, receiver);
             }
         }
     }
 
-    private void handleCheckUpdates(boolean notify, ResultReceiver receiver) {
+    private void handleCheckUpdates(Intent intent, boolean notify, ResultReceiver receiver) {
         List<LeeroyApp> appList = LeeroyApp.getApps(getPackageManager());
 
         if (appList.size() == 0) {
@@ -78,6 +81,7 @@ public class LeeroyUpdateService extends IntentService {
         }
 
         List<LeeroyAppUpdate> updates = new LinkedList<>();
+        List<LeeroyException> exceptions  = new LinkedList<>();
         for (LeeroyApp app : appList) {
             try {
                 String paramUrl = app.getJenkinsUrl() +
@@ -116,38 +120,60 @@ public class LeeroyUpdateService extends IntentService {
                 }
             } catch (MalformedURLException e) {
                 e.printStackTrace();
+                CharSequence appName = app.getApplicationInfo().loadLabel(getPackageManager());
+                exceptions.add(new LeeroyException(app, getString(R.string.invalid_url, appName), e));
             } catch (IOException e) {
                 e.printStackTrace();
+                exceptions.add(new LeeroyException(app, e));
             }
         }
 
         if (notify) {
-            NotificationCompat.Builder ncb = new NotificationCompat.Builder(this);
-            ncb.setSmallIcon(R.drawable.ic_stat_update);
-            ncb.setTicker(getString(R.string.updates_available));
-            ncb.setContentTitle(getString(R.string.updates_available));
-            ncb.setPriority(NotificationCompat.PRIORITY_LOW);
-            ncb.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
-            Intent appIntent = new Intent(this, AppListActivity.class);
-            appIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            ncb.setContentIntent(PendingIntent.getActivity(this, 0, appIntent,
-                    PendingIntent.FLAG_CANCEL_CURRENT));
-            ncb.setAutoCancel(true);
-            NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle();
-            for (LeeroyAppUpdate update : updates) {
-                CharSequence appName = update.app.getApplicationInfo().loadLabel(getPackageManager());
-                style.addLine(getString(R.string.notify_app_update, appName, update.app.getJenkinsBuild(),
-                        update.newBuild));
-            }
-            ncb.setStyle(style);
-            ncb.setNumber(updates.size());
             NotificationManagerCompat nm = NotificationManagerCompat.from(this);
-            nm.notify(NOTIFICATION_UPDATE, ncb.build());
+            if (updates.size() > 0) {
+                NotificationCompat.Builder ncb = new NotificationCompat.Builder(this);
+                ncb.setSmallIcon(R.drawable.ic_stat_update);
+                ncb.setTicker(getString(R.string.updates_available));
+                ncb.setContentTitle(getString(R.string.updates_available));
+                ncb.setPriority(NotificationCompat.PRIORITY_LOW);
+                ncb.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+                Intent appIntent = new Intent(this, AppListActivity.class);
+                appIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                ncb.setContentIntent(PendingIntent.getActivity(this, 0, appIntent,
+                        PendingIntent.FLAG_CANCEL_CURRENT));
+                ncb.setAutoCancel(true);
+                NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle();
+                for (LeeroyAppUpdate update : updates) {
+                    CharSequence appName = update.app.getApplicationInfo().loadLabel(getPackageManager());
+                    style.addLine(getString(R.string.notify_app_update, appName, update.app.getJenkinsBuild(),
+                            update.newBuild));
+                }
+                style.setSummaryText(getString(R.string.app_name));
+                ncb.setStyle(style);
+                ncb.setNumber(updates.size());
+                nm.notify(NOTIFICATION_UPDATE, ncb.build());
+            }
+
+            if (exceptions.size() > 0) {
+                NotificationCompat.Builder ncb = new NotificationCompat.Builder(this);
+                ncb.setSmallIcon(R.drawable.ic_stat_error);
+                ncb.setTicker(getString(R.string.error_checking_updates));
+                ncb.setContentTitle(getString(R.string.error_checking_updates));
+                ncb.setContentText(getString(R.string.click_to_retry));
+                ncb.setPriority(NotificationCompat.PRIORITY_LOW);
+                ncb.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+                ncb.setContentIntent(PendingIntent.getActivity(this, 0, intent,
+                        PendingIntent.FLAG_CANCEL_CURRENT));
+                ncb.setAutoCancel(true);
+                ncb.setNumber(exceptions.size());
+                nm.notify(NOTIFICATION_ERROR, ncb.build());
+            }
         }
 
         if (receiver != null) {
             Bundle results = new Bundle();
             results.putParcelableArrayList(EXTRA_UPDATE_LIST, new ArrayList<>(updates));
+            results.putParcelableArrayList(EXTRA_EXCEPTION_LIST, new ArrayList<>(exceptions));
             receiver.send(0, results);
         }
     }

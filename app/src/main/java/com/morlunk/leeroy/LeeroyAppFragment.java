@@ -18,6 +18,7 @@
 package com.morlunk.leeroy;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -55,9 +56,28 @@ public class LeeroyAppFragment extends ListFragment {
                 super.onReceiveResult(resultCode, resultData);
                 List<LeeroyAppUpdate> updates =
                         resultData.getParcelableArrayList(LeeroyUpdateService.EXTRA_UPDATE_LIST);
+                List<LeeroyException> errors =
+                        resultData.getParcelableArrayList(LeeroyUpdateService.EXTRA_EXCEPTION_LIST);
                 LeeroyAppAdapter adapter = new LeeroyAppAdapter(getActivity(), updates);
                 setListAdapter(adapter);
                 setListShown(true);
+
+                if (errors.size() > 0) {
+                    AlertDialog.Builder adb = new AlertDialog.Builder(getActivity());
+                    adb.setTitle(R.string.error);
+                    StringBuilder sb = new StringBuilder();
+                    for (LeeroyException e : errors) {
+                        CharSequence appName = e.getApp().getApplicationInfo().loadLabel(
+                                getActivity().getPackageManager());
+                        sb.append(appName)
+                                .append(": ")
+                                .append(e.getLocalizedMessage())
+                                .append('\n');
+                    }
+                    adb.setMessage(sb.toString());
+                    adb.setPositiveButton(android.R.string.ok, null);
+                    adb.show();
+                }
             }
         };
     }

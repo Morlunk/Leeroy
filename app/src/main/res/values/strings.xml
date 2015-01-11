@@ -37,5 +37,8 @@
     <string name="update_interval_sum">Interval between Jenkins updates.</string>
     <string name="no_updates">No updates found.</string>
     <string name="action_refresh">Refresh</string>
+    <string name="invalid_url">Invalid Jenkins URL for app %s.</string>
+    <string name="error_checking_updates">Error checking Jenkins updates</string>
+    <string name="click_to_retry">Click to retry.</string>
 
 </resources>
