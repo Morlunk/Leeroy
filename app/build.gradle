@@ -18,7 +18,7 @@
 apply plugin: 'com.android.application'
 apply from: "../Leeroy-Gradle/leeroy.gradle"
 
-setupLeeroy("../Leeroy-Gradle", "app-leeroy-jenkins\\.apk")
+setupLeeroy("../Leeroy-Gradle", ".+\\.apk")
 
 android {
     compileSdkVersion 21
