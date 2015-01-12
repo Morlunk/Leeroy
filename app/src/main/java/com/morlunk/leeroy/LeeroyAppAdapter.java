@@ -28,30 +28,48 @@ import android.widget.TextView;
 import java.util.List;
 
 /**
+ * An adapter displaying Leeroy apps with updates, and Leeroy apps that are up to date underneath.
  * Created by andrew on 08/01/15.
  */
 public class LeeroyAppAdapter extends BaseAdapter {
     private Context mContext;
-    private List<LeeroyAppUpdate> mAppList;
+    private List<LeeroyAppUpdate> mUpdateList;
+    private List<LeeroyApp> mNoUpdateList;
 
-    public LeeroyAppAdapter(Context context, List<LeeroyAppUpdate> appList) {
+    public LeeroyAppAdapter(Context context, List<LeeroyAppUpdate> appList,
+                            List<LeeroyApp> appListWithoutUpdates) {
         mContext = context;
-        mAppList = appList;
+        mUpdateList = appList;
+        mNoUpdateList = appListWithoutUpdates;
     }
 
     @Override
     public int getCount() {
-        return mAppList.size();
+        return mUpdateList.size() + mNoUpdateList.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return mAppList.get(position);
+        if (isUpdate(position)) {
+            return mUpdateList.get(position);
+        } else {
+            return mNoUpdateList.get(position - mUpdateList.size());
+        }
     }
 
     @Override
     public long getItemId(int position) {
         return 0;
+    }
+
+    @Override
+    public boolean areAllItemsEnabled() {
+        return false;
+    }
+
+    @Override
+    public boolean isEnabled(int position) {
+        return isUpdate(position);
     }
 
     @Override
@@ -61,14 +79,27 @@ public class LeeroyAppAdapter extends BaseAdapter {
             LayoutInflater inflater = LayoutInflater.from(mContext);
             v = inflater.inflate(R.layout.item_app, parent, false);
         }
-        final LeeroyAppUpdate update = mAppList.get(position);
-        final LeeroyApp app = update.app;
         final ImageView icon = (ImageView) v.findViewById(R.id.item_app_icon);
         final TextView title = (TextView) v.findViewById(R.id.item_app_title);
         final TextView version = (TextView) v.findViewById(R.id.item_app_version);
+        final LeeroyApp app;
+        if (isUpdate(position)) {
+            final LeeroyAppUpdate update = (LeeroyAppUpdate) getItem(position);
+            app = update.app;
+            version.setText(mContext.getString(R.string.app_update, app.getJenkinsBuild(),
+                    update.newBuild));
+            v.setAlpha(1.f);
+        } else {
+            app = (LeeroyApp) getItem(position);
+            version.setText(mContext.getString(R.string.app_current, app.getJenkinsBuild()));
+            v.setAlpha(0.5f);
+        }
         icon.setImageDrawable(app.getApplicationInfo().loadIcon(mContext.getPackageManager()));
         title.setText(app.getApplicationInfo().loadLabel(mContext.getPackageManager()));
-        version.setText(mContext.getString(R.string.app_update, app.getJenkinsBuild(), update.newBuild));
         return v;
+    }
+
+    private boolean isUpdate(int position) {
+        return position < mUpdateList.size(); // show updates before apps.
     }
 }

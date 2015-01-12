@@ -47,13 +47,14 @@ public class LeeroyUpdateService extends IntentService {
     /**
      * Checks the Jenkins URLs for updates, displaying a notification if {@link #EXTRA_NOTIFY} is
      * set. Informs the {@link ResultReceiver} in {@link #EXTRA_RECEIVER} of available updates
-     * in the bundle's {@link #EXTRA_UPDATE_LIST}, and of failed queries in
-     * {@link #EXTRA_EXCEPTION_LIST}.
+     * in the bundle's {@link #EXTRA_UPDATE_LIST}, apps with no updates in
+     * {@link #EXTRA_NO_UPDATE_LIST} and of failed queries in {@link #EXTRA_EXCEPTION_LIST}.
      */
     public static final String ACTION_CHECK_UPDATES = "com.morlunk.leeroy.action.CHECK_UPDATES";
 
     public static final String EXTRA_NOTIFY = "com.morlunk.leeroy.extra.NOTIFY";
     public static final String EXTRA_UPDATE_LIST = "com.morlunk.leeroy.extra.UPDATE_LIST";
+    public static final String EXTRA_NO_UPDATE_LIST = "com.morlunk.leeroy.extra.NO_UPDATE_LIST";
     public static final String EXTRA_EXCEPTION_LIST = "com.morlunk.leeroy.extra.EXCEPTION_LIST";
     public static final String EXTRA_RECEIVER = "com.morlunk.leeroy.extra.RECEIVER";
 
@@ -81,6 +82,7 @@ public class LeeroyUpdateService extends IntentService {
         }
 
         List<LeeroyAppUpdate> updates = new LinkedList<>();
+        List<LeeroyApp> notUpdatedApps = new LinkedList<>();
         List<LeeroyException> exceptions  = new LinkedList<>();
         for (LeeroyApp app : appList) {
             try {
@@ -117,6 +119,8 @@ public class LeeroyUpdateService extends IntentService {
                     update.newBuild = latestSuccessfulBuild;
                     update.newBuildUrl = buildUrl;
                     updates.add(update);
+                } else {
+                    notUpdatedApps.add(app);
                 }
             } catch (MalformedURLException e) {
                 e.printStackTrace();
@@ -174,6 +178,7 @@ public class LeeroyUpdateService extends IntentService {
         if (receiver != null) {
             Bundle results = new Bundle();
             results.putParcelableArrayList(EXTRA_UPDATE_LIST, new ArrayList<>(updates));
+            results.putParcelableArrayList(EXTRA_NO_UPDATE_LIST, new ArrayList<>(notUpdatedApps));
             results.putParcelableArrayList(EXTRA_EXCEPTION_LIST, new ArrayList<>(exceptions));
             receiver.send(0, results);
         }

@@ -56,9 +56,12 @@ public class LeeroyAppFragment extends ListFragment {
                 super.onReceiveResult(resultCode, resultData);
                 List<LeeroyAppUpdate> updates =
                         resultData.getParcelableArrayList(LeeroyUpdateService.EXTRA_UPDATE_LIST);
+                List<LeeroyApp> appsWithoutUpdates =
+                        resultData.getParcelableArrayList(LeeroyUpdateService.EXTRA_NO_UPDATE_LIST);
                 List<LeeroyException> errors =
                         resultData.getParcelableArrayList(LeeroyUpdateService.EXTRA_EXCEPTION_LIST);
-                LeeroyAppAdapter adapter = new LeeroyAppAdapter(getActivity(), updates);
+                LeeroyAppAdapter adapter = new LeeroyAppAdapter(getActivity(), updates,
+                        appsWithoutUpdates);
                 setListAdapter(adapter);
                 setListShown(true);
 
