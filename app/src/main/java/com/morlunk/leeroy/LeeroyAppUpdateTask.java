@@ -37,6 +37,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * A task to update a Leeroy app and show a progress dialog.
@@ -73,8 +74,8 @@ public class LeeroyAppUpdateTask extends AsyncTask<LeeroyAppUpdate, Void, Void> 
     protected Void doInBackground(LeeroyAppUpdate... params) {
         for (LeeroyAppUpdate update : params) {
             // Get artifact path matching regex
-            Pattern pathPattern = Pattern.compile(update.app.getJenkinsArtifactPathRegex());
             try {
+                Pattern pathPattern = Pattern.compile(update.app.getJenkinsArtifactPathRegex());
                 String paramUrl = update.newBuildUrl +
                         "/api/json?tree=artifacts[relativePath]";
                 URL url = new URL(paramUrl);
@@ -120,6 +121,9 @@ public class LeeroyAppUpdateTask extends AsyncTask<LeeroyAppUpdate, Void, Void> 
                     mThrowable = new Exception(mContext.getString(R.string.error_no_artifact));
                 }
             } catch (IOException e) {
+                e.printStackTrace();
+                mThrowable = e;
+            } catch (PatternSyntaxException e) {
                 e.printStackTrace();
                 mThrowable = e;
             }
